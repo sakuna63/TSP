@@ -9,6 +9,8 @@
 #define MAX 20000
 
 #include<math.h>
+#include<limits.h>
+#include<stdlib.h>
 #include<stdio.h>
 
 extern int n, length, tour[MAX];
@@ -25,7 +27,6 @@ extern void showString(char *str);
 extern void showLength(int leng);
 /// ###
 
-
 int tr[MAX];
 
 /// 距離の計算はこの関数と同等の方法で行う．
@@ -39,59 +40,52 @@ int Dis(int i, int j)
   return (int)(sqrt(xd * xd + yd * yd) + .5);
 }
 
-/// 以下 int tspSolver(void) が必要なこと以外は自由に作る．
-///
-int cost_evaluate()
-{
-  int j;
-  int sum;
+// 動的計画法によって最適解を求める関数
+int dynamic() {
+  int i, j ,S, tmp, SMAX, *f[n];
 
-  sum = Dis(tr[n - 1], tr[0]);
-  for (j = 0; j < n - 1; j++) {
-    sum += Dis(tr[j], tr[j + 1]);
-  }
+  // 各点の経由状態をビットフラグで表現した場合の最大値(2^n - 1)を計算する
+  SMAX = 1 << n;
 
-  return sum;
-}
+  // メモリ確保
+  for ( i = 0; i < n; i++)
+    f[i] = (int *)malloc(sizeof(int) * SMAX);
 
+  // 配列をすべて初期化しておく
+  for (S = 1; S < SMAX; S++)
+    for (i = 0; i < n; i++)
+      f[i][S] = 1000000;
 
-void perm(int i)
-{
-  int j, tmp;
-  int cost;
+  // 始点をn-1として、始点-点i間の距離を計算しておく
+  for ( i = 0; i < n-1; i++)
+    f[i][1<<i] = Dis(n-1, i);
 
-  if (i < n - 2) {
-    perm(i + 1);
-    for (j = i + 1; j < n - 1; j++) {
-      tmp = tr[i];  tr[i] = tr[j];  tr[j] = tmp;
-      perm(i + 1);
-      tmp = tr[i];  tr[i] = tr[j];  tr[j] = tmp;
-    }
-  } else {
-    cost = cost_evaluate();
-    if (cost < length) {
-      length = cost;
-      for (j = 0; j < n; j++) tour[j] = tr[j];
+  for (S = 1; S < SMAX; S++) {
+    // iを含む部分集合Sを経て点iに至った場合について距離を計算する
+    for ( i = 0; i < n; i++) {
 
-      /// テスト等のために順回路等の表示機能が使える．
-      showLength(length);
-      showString("KOUSHIN!");
-      showTour(tr, 1000, 1);
-      showString("TANSAKU");
-    } else {
-      showTour(tr, 10, 0);
+      // 部分集合にiが含まれていなかった場合は計算しない
+      if(!((1<<i) & S)) continue;
+
+      // 点iからjまでの距離を加算する
+      for ( j = 0; j < n; j++) {
+
+        // jが部分集合に含まれていた場合は計算しない
+        if ((1<<j) & S) continue;
+
+        // f[i][S]:iを含む部分集合Sを得てiに至った場合の最短距離
+        tmp = f[i][S] + Dis(i,j);
+        printf("i:%d,j:%d,S:%d,tmp:%d\n", i, j, S, tmp);
+        if (tmp < f[j][(S | (1<<j))])
+          f[j][(S | (1<<j))] = tmp;
+      }
     }
   }
+  return f[n-1][SMAX-1];
 }
-
 
 int tspSolver(void)
 {
-  int j;
-
-  for (j = 0; j < n; j++) tr[j] = j;
-  length = cost_evaluate();
-  perm(0);
-
+  length = dynamic();
   return 1;
 }
