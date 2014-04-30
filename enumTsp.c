@@ -75,7 +75,8 @@ int dynamic() {
 
         // f[i][S]:iを含む部分集合Sを得てiに至った場合の最短距離
         tmp = f[i][S] + Dis(i,j);
-        printf("i:%d,j:%d,S:%d,tmp:%d\n", i, j, S, tmp);
+        printf("i:%d, j:%d, S:%d, tmp:%d\n", i, j, S, tmp);
+        return 1;
         if (tmp < f[j][(S | (1<<j))])
           f[j][(S | (1<<j))] = tmp;
       }
