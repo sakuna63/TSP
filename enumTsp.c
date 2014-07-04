@@ -72,15 +72,7 @@ void perm(int i)
     if (cost < length) {
       length = cost;
       for (j = 0; j < n; j++) tour[j] = tr[j];
-
-      /// テスト等のために順回路等の表示機能が使える．
-      showLength(length);
-      showString("KOUSHIN!");
-      showTour(tr, 1000, 1);
-      showString("TANSAKU");
-    } else {
-      showTour(tr, 10, 0);
-    }
+    } 
   }
 }
 
